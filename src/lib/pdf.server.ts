@@ -171,7 +171,7 @@ export async function renderReportPdf(input: {
   const regular = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const serif = await doc.embedFont(StandardFonts.TimesRoman);
-  const serifBold = await doc.embedFont(StandardFonts.TimesBold);
+  const serifBold = await doc.embedFont(StandardFonts.TimesRomanBold);
 
   const publisher = input.branding.whiteLabel
     ? (input.branding.agencyName?.trim() || "Prepared by your agency")
