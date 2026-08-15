@@ -51,7 +51,9 @@ export async function createCheckoutSession(input: {
   return { url: String(session["url"]), id: String(session["id"]) };
 }
 
-export async function getCheckoutSession(sessionId: string): Promise<{ paid: boolean; orderId?: string }> {
+export async function getCheckoutSession(
+  sessionId: string,
+): Promise<{ paid: boolean; orderId: string | undefined }> {
   const session = await stripe(`checkout/sessions/${sessionId}`);
   return {
     paid: session["payment_status"] === "paid",
