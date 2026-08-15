@@ -30,7 +30,7 @@ export async function callAI(
 
 export function parseJsonLoose<T>(text: string): T {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const candidate = (fenced ? fenced[1] : text).trim();
+  const candidate = (fenced?.[1] ?? text).trim();
   try {
     return JSON.parse(candidate) as T;
   } catch {
