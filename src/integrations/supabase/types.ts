@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          access_token: string
+          agency_logo_path: string | null
+          agency_name: string | null
+          amount_cents: number
+          brand_name: string
+          brand_website: string
+          competitors: string[]
+          created_at: string
+          email: string
+          email_sent: boolean
+          error_message: string | null
+          id: string
+          industry: string
+          payment_status: string
+          progress_message: string | null
+          raw_results: Json | null
+          report_json: Json | null
+          report_path: string | null
+          status: string
+          stripe_session_id: string | null
+          target_customer: string
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string
+          agency_logo_path?: string | null
+          agency_name?: string | null
+          amount_cents?: number
+          brand_name: string
+          brand_website: string
+          competitors?: string[]
+          created_at?: string
+          email: string
+          email_sent?: boolean
+          error_message?: string | null
+          id?: string
+          industry: string
+          payment_status?: string
+          progress_message?: string | null
+          raw_results?: Json | null
+          report_json?: Json | null
+          report_path?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          target_customer: string
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          agency_logo_path?: string | null
+          agency_name?: string | null
+          amount_cents?: number
+          brand_name?: string
+          brand_website?: string
+          competitors?: string[]
+          created_at?: string
+          email?: string
+          email_sent?: boolean
+          error_message?: string | null
+          id?: string
+          industry?: string
+          payment_status?: string
+          progress_message?: string | null
+          raw_results?: Json | null
+          report_json?: Json | null
+          report_path?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          target_customer?: string
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
