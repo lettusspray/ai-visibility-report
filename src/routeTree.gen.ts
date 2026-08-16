@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ReportTokenRouteImport } from './routes/report.$token'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportTokenRoute = ReportTokenRouteImport.update({
@@ -39,12 +45,14 @@ const ApiPublicPaystackWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/report/$token': typeof ReportTokenRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/report/$token': typeof ReportTokenRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
@@ -52,18 +60,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/report/$token': typeof ReportTokenRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/report/$token' | '/api/public/paystack-webhook'
+  fullPaths:
+    '/' | '/admin' | '/auth' | '/report/$token' | '/api/public/paystack-webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/report/$token' | '/api/public/paystack-webhook'
+  to:
+    '/' | '/admin' | '/auth' | '/report/$token' | '/api/public/paystack-webhook'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/auth'
     | '/report/$token'
     | '/api/public/paystack-webhook'
   fileRoutesById: FileRoutesById
@@ -71,6 +83,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
   ReportTokenRoute: typeof ReportTokenRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
@@ -89,6 +102,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/report/$token': {
@@ -111,6 +131,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
   ReportTokenRoute: ReportTokenRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
