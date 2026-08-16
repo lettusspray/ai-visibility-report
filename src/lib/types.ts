@@ -24,7 +24,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     blurb: "One snapshot a month, so you can see the sky.",
     reportsPerMonth: 1,
     softCapPerMonth: 1,
-    maxQuestions: 10,
+    maxQuestions: 5,
     customQuestions: false,
     trendHistory: false,
     whiteLabelText: false,
@@ -93,6 +93,12 @@ export type QueryResult = {
   brandMentioned: boolean;
   cited: boolean;
   competitorsMentioned: string[];
+  /** Browser-engine id (e.g. browser-chatgpt). */
+  engine?: string;
+  sources?: string[];
+  keyword?: string | null;
+  productsMentioned?: string[];
+  sentiment?: { label: SentimentLabel; reason?: string } | null;
   error?: string;
 };
 
@@ -112,6 +118,67 @@ export type ReportData = {
   whyLosing: string[];
   actionItems: { title: string; detail: string; impact: string }[];
   closingNote: string;
+  productVisibility?: ProductVisibility[];
+  keywordVisibility?: KeywordVisibility[];
+  sentiment?: SentimentStats;
 };
 
 export type SnapshotStatus = "pending" | "processing" | "complete" | "failed";
+
+export type SentimentLabel = "positive" | "neutral" | "negative";
+
+export type BrandProduct = {
+  id: string;
+  brand_id: string;
+  name: string;
+  category: string | null;
+  description: string | null;
+  sort_order: number;
+};
+
+export type BrandFact = {
+  id: string;
+  brand_id: string;
+  kind: "fact" | "messaging";
+  content: string;
+  source_url: string | null;
+};
+
+export type BrandKeyword = {
+  id: string;
+  brand_id: string;
+  keyword: string;
+  priority: number;
+  active: boolean;
+};
+
+export type BrandBrain = {
+  products: BrandProduct[];
+  facts: BrandFact[];
+  keywords: BrandKeyword[];
+};
+
+export type ProductVisibility = {
+  product: string;
+  category: string | null;
+  visibility: number;
+  byPlatform: { platform: string; visibility: number }[];
+};
+
+export type KeywordVisibility = {
+  keyword: string;
+  visibility: number;
+  mentions: number;
+  total: number;
+};
+
+export type SentimentStats = {
+  overall: { positive: number; negative: number; neutral: number; sample: number };
+  byPlatform: {
+    platform: string;
+    positive: number;
+    negative: number;
+    neutral: number;
+    sample: number;
+  }[];
+};

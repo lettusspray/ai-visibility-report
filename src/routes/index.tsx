@@ -15,32 +15,100 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Track how ChatGPT, Gemini and Perplexity recommend your business, watch the trend over time, and get clear actions to be recommended more often.",
+          "Track how ChatGPT, Gemini, Perplexity and DeepSeek recommend your business, watch the trend over time, and get clear actions to be recommended more often.",
       },
       { property: "og:title", content: "Mercercroft — Remove uncertainty in AI search" },
       {
         property: "og:description",
-        content: "Change how AI understands your business — and increase how often it recommends you.",
+        content:
+          "Change how AI understands your business — and increase how often it recommends you.",
+      },
+      { property: "og:url", content: "https://mercercroft.com/" },
+      { name: "twitter:title", content: "Mercercroft — Remove uncertainty in AI search" },
+      {
+        name: "twitter:description",
+        content:
+          "Change how AI understands your business — and increase how often it recommends you.",
       },
     ],
+    links: [{ rel: "canonical", href: "https://mercercroft.com/" }],
   }),
   component: Index,
 });
 
 const steps = [
-  { icon: CloudMark, title: "We map the questions", body: "Up to 75 buyer-intent questions for your niche, plus any you add yourself with an optional region tag." },
-  { icon: RainMark, title: "We run them across the engines", body: "ChatGPT, Gemini and Perplexity answer every question. We record mentions, citations and the answer text." },
-  { icon: IsobarMark, title: "We chart the pressure", body: "Each run is stored, so you see visibility move over time instead of guessing from one reading." },
-  { icon: SunMark, title: "We clear the fog", body: "A grounded analysis of why answers go elsewhere, with prioritised actions and an exportable report." },
+  {
+    icon: CloudMark,
+    title: "We map the questions",
+    body: "Up to 75 buyer-intent questions for your niche, tagged by product and keyword. Add your own with an optional region tag.",
+  },
+  {
+    icon: RainMark,
+    title: "We ask every engine",
+    body: "ChatGPT, Gemini, Perplexity and DeepSeek answer each question through real browser sessions — the same results a person would see.",
+  },
+  {
+    icon: IsobarMark,
+    title: "We chart the pressure",
+    body: "Each run is stored so you see visibility move over time. Product mentions, keyword visibility and sentiment are tracked per engine.",
+  },
+  {
+    icon: SunMark,
+    title: "We clear the fog",
+    body: "A grounded two-pass analysis of why answers go elsewhere, with prioritised actions, an exportable PDF report and a shareable link.",
+  },
+];
+
+const features = [
+  {
+    title: "Brand Brain",
+    body: "Tell us your products, key messaging and the keywords you care about. The snapshot pipeline uses this context to compute a product map, keyword visibility scores and per-engine sentiment.",
+  },
+  {
+    title: "Product Map",
+    body: "See which of your products each engine actually mentions — and which it ignores. Broken down per platform so you know where to focus.",
+  },
+  {
+    title: "Keyword Visibility",
+    body: "Track how often each target keyword appears across engines. Spot the gaps between what you say and what AI assistants repeat.",
+  },
+  {
+    title: "Sentiment Analysis",
+    body: "Every answer is tagged positive, neutral or negative with a one-line reason. See the overall mood and per-engine breakdown at a glance.",
+  },
 ];
 
 const comparison = [
-  { name: "Mercercroft", price: "Free · $99 · $149 / mo", position: "Tracking plus a client-ready report export, white-label on paid plans." },
-  { name: "ZeroRank", price: "From ~$99 / mo", position: "AI search visibility monitoring with optimisation workflows." },
-  { name: "Ahrefs Brand Radar", price: "Bundled with Ahrefs plans (from ~$129 / mo)", position: "AI mention tracking inside the wider Ahrefs SEO suite." },
-  { name: "Profound", price: "Enterprise, from ~$500 / mo", position: "Answer-engine analytics aimed at larger in-house teams." },
-  { name: "Peec AI", price: "From ~€90 / mo", position: "AI visibility dashboards for brands and agencies." },
-  { name: "AirOps", price: "From ~$199 / mo", position: "Content workflow automation with AI-visibility measurement attached." },
+  {
+    name: "Mercercroft",
+    price: "Free · $99 · $149 / mo",
+    position: "Tracking plus a client-ready report export, white-label on paid plans.",
+  },
+  {
+    name: "ZeroRank",
+    price: "From ~$99 / mo",
+    position: "AI search visibility monitoring with optimisation workflows.",
+  },
+  {
+    name: "Ahrefs Brand Radar",
+    price: "Bundled with Ahrefs plans (from ~$129 / mo)",
+    position: "AI mention tracking inside the wider Ahrefs SEO suite.",
+  },
+  {
+    name: "Profound",
+    price: "Enterprise, from ~$500 / mo",
+    position: "Answer-engine analytics aimed at larger in-house teams.",
+  },
+  {
+    name: "Peec AI",
+    price: "From ~€90 / mo",
+    position: "AI visibility dashboards for brands and agencies.",
+  },
+  {
+    name: "AirOps",
+    price: "From ~$199 / mo",
+    position: "Content workflow automation with AI-visibility measurement attached.",
+  },
 ];
 
 function Index() {
@@ -69,6 +137,7 @@ function Index() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main>
+        {/* ── Hero ── */}
         <section className="border-b border-border">
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 md:grid-cols-[1.1fr_0.9fr] md:py-28">
             <div>
@@ -80,13 +149,21 @@ function Index() {
                 Remove uncertainty. Understand how your business is being recommended by AI.
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Change how AI understands your business — and increase how often it recommends you.
+                Track mentions, sentiment and citations across ChatGPT, Gemini, Perplexity and
+                DeepSeek — then get clear actions to be recommended more often.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link to="/auth" search={{ mode: "signup" }} className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
+                <Link
+                  to="/auth"
+                  search={{ mode: "signup" }}
+                  className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
+                >
                   Start free
                 </Link>
-                <a href="#pricing" className="rounded-full border border-input bg-card px-6 py-3 text-sm font-medium hover:bg-secondary">
+                <a
+                  href="#pricing"
+                  className="rounded-full border border-input bg-card px-6 py-3 text-sm font-medium hover:bg-secondary"
+                >
                   See plans
                 </a>
               </div>
@@ -102,28 +179,40 @@ function Index() {
                 <SunBehindCloudMark className="h-16 w-16 text-accent" />
               </div>
               <div className="mt-6 space-y-3">
-                {[["ChatGPT", 44], ["Gemini", 31], ["Perplexity", 39]].map(([p, v]) => (
+                {[
+                  ["ChatGPT", 44],
+                  ["Gemini", 31],
+                  ["Perplexity", 39],
+                ].map(([p, v]) => (
                   <div key={p as string}>
-                    <div className="flex justify-between text-sm"><span>{p}</span><span className="text-muted-foreground">{v}%</span></div>
+                    <div className="flex justify-between text-sm">
+                      <span>{p}</span>
+                      <span className="text-muted-foreground">{v}%</span>
+                    </div>
                     <div className="mt-1.5 h-2 rounded-full bg-storm-soft">
-                      <div className="h-2 rounded-full bg-accent" style={{ width: `${v}%` }} />
+                      <div className="h-2 rounded-full bg-primary" style={{ width: `${v}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
-              <p className="mt-6 text-sm text-muted-foreground">Know your forecast before your competitor does.</p>
+              <p className="mt-6 text-sm text-muted-foreground">
+                Know your forecast before your competitor does.
+              </p>
             </div>
           </div>
         </section>
 
+        {/* ── How it works ── */}
         <section id="how" className="scroll-mt-24 border-b border-border">
           <div className="mx-auto max-w-6xl px-6 py-20">
             <p className="text-eyebrow">How it works</p>
-            <h2 className="mt-3 max-w-2xl text-3xl font-semibold md:text-4xl">From gloomy to happy clouds</h2>
+            <h2 className="mt-3 max-w-2xl text-3xl font-semibold md:text-4xl">
+              From gloomy to happy clouds
+            </h2>
             <div className="mt-12 grid gap-6 sm:grid-cols-2">
               {steps.map((s) => (
                 <div key={s.title} className="cloud-card p-7">
-                  <s.icon className="h-9 w-9 text-storm" />
+                  <s.icon className="h-9 w-9 text-primary" />
                   <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
                   <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{s.body}</p>
                 </div>
@@ -132,22 +221,53 @@ function Index() {
           </div>
         </section>
 
+        {/* ── Features ── */}
+        <section className="scroll-mt-24 border-b border-border">
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <p className="text-eyebrow">What you get</p>
+            <h2 className="mt-3 max-w-2xl text-3xl font-semibold md:text-4xl">
+              More than a visibility score
+            </h2>
+            <div className="mt-12 grid gap-6 sm:grid-cols-2">
+              {features.map((f) => (
+                <div key={f.title} className="cloud-card p-7">
+                  <h3 className="text-lg font-semibold">{f.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{f.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Pricing ── */}
         <section id="pricing" className="scroll-mt-24 border-b border-border">
           <div className="mx-auto max-w-6xl px-6 py-20">
             <p className="text-eyebrow">Pricing</p>
-            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">Clear skies ahead, or find out why not.</h2>
+            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
+              Clear skies ahead, or find out why not.
+            </h2>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {(Object.values(PLANS)).map((plan) => (
-                <div key={plan.id} className={`cloud-card flex flex-col p-8 ${plan.id === "starter" ? "ring-2 ring-accent/40" : ""}`}>
+              {Object.values(PLANS).map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`cloud-card flex flex-col p-8 ${plan.id === "starter" ? "ring-2 ring-accent/40" : ""}`}
+                >
                   <p className="text-eyebrow">{plan.name}</p>
                   <div className="mt-3 flex items-baseline gap-2">
-                    <span className="font-display text-4xl font-semibold">{plan.priceUsd === 0 ? "Free" : `$${plan.priceUsd}`}</span>
-                    {plan.priceUsd > 0 ? <span className="text-sm text-muted-foreground">/ month USD</span> : null}
+                    <span className="font-display text-4xl font-semibold">
+                      {plan.priceUsd === 0 ? "Free" : `$${plan.priceUsd}`}
+                    </span>
+                    {plan.priceUsd > 0 ? (
+                      <span className="text-sm text-muted-foreground">/ month USD</span>
+                    ) : null}
                   </div>
                   <p className="mt-3 text-sm text-muted-foreground">{plan.blurb}</p>
                   <ul className="mt-6 flex-1 space-y-2.5 text-sm text-muted-foreground">
                     {plan.features.map((f) => (
-                      <li key={f} className="flex gap-2"><SunMark className="mt-0.5 h-4 w-4 shrink-0 text-accent" />{f}</li>
+                      <li key={f} className="flex gap-2">
+                        <SunMark className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        {f}
+                      </li>
                     ))}
                   </ul>
                   <button
@@ -155,16 +275,25 @@ function Index() {
                     disabled={busy === plan.id}
                     className={`mt-8 rounded-full px-5 py-3 text-sm font-medium disabled:opacity-60 ${plan.id === "starter" ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"}`}
                   >
-                    {busy === plan.id ? "Opening checkout…" : plan.priceUsd === 0 ? "Start free" : `Choose ${plan.name}`}
+                    {busy === plan.id
+                      ? "Opening checkout…"
+                      : plan.priceUsd === 0
+                        ? "Start free"
+                        : `Choose ${plan.name}`}
                   </button>
                 </div>
               ))}
             </div>
             {error ? <p className="mt-4 text-sm text-destructive">{error}</p> : null}
-            <p className="mt-4 text-sm text-muted-foreground">Billing in USD via Paystack. Cancel any time.</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Billing in USD via Paystack. Cancel any time.
+            </p>
 
             <h3 className="mt-16 text-2xl font-semibold">How we compare</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Public pricing and positioning, as advertised by each product. Figures change; check their sites for current rates.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Public pricing and positioning, as advertised by each product. Figures change; check
+              their sites for current rates.
+            </p>
             <div className="mt-6 overflow-x-auto">
               <table className="w-full min-w-160 border-collapse text-left text-sm">
                 <thead>
@@ -188,13 +317,22 @@ function Index() {
           </div>
         </section>
 
+        {/* ── Bottom CTA ── */}
         <section>
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-6 py-20 md:flex-row md:items-center md:justify-between">
             <div className="max-w-xl">
-              <h2 className="text-3xl font-semibold">Know your forecast before your competitor does.</h2>
-              <p className="mt-3 text-muted-foreground">Your first snapshot is free. It takes about two minutes.</p>
+              <h2 className="text-3xl font-semibold">
+                Know your forecast before your competitor does.
+              </h2>
+              <p className="mt-3 text-muted-foreground">
+                Your first snapshot is free. It takes about two minutes.
+              </p>
             </div>
-            <Link to="/auth" search={{ mode: "signup" }} className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
+            <Link
+              to="/auth"
+              search={{ mode: "signup" }}
+              className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
               Start free
             </Link>
           </div>

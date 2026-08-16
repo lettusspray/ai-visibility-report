@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+import { asLoose } from "./loose-client";
+import type { BrandFact, BrandKeyword, BrandProduct } from "./types";
 import { PLANS, planOf } from "./types";
 
 const brandSchema = z.object({
@@ -25,7 +27,11 @@ export const getMe = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const email = (claims["email"] as string | undefined) ?? "";
 
-    let { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    let { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
     if (!profile) {
       const { data: created } = await supabase
         .from("profiles")
@@ -116,42 +122,242 @@ export const addCustomQuery = createServerFn({ method: "POST" })
         brandId: z.string().uuid(),
         question: z.string().min(6).max(300),
         region: z.string().max(80).nullable().optional(),
+        keyword: z.string().max(80).nullable().optional(),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: profile } = await supabase.from("profiles").select("plan").eq("id", userId).single();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", userId)
+      .single();
     const plan = planOf(profile?.plan);
-    if (!plan.customQuestions) throw new Error("Custom questions are available on Starter and Pro.");
+    if (!plan.customQuestions)
+      throw new Error("Custom questions are available on Starter and Pro.");
 
     const { count } = await supabase
       .from("tracked_queries")
       .select("id", { count: "exact", head: true })
       .eq("brand_id", data.brandId);
-    if ((count ?? 0) >= plan.maxQuestions) throw new Error(`This brand already tracks ${plan.maxQuestions} questions.`);
+    if ((count ?? 0) >= plan.maxQuestions)
+      throw new Error(`This brand already tracks ${plan.maxQuestions} questions.`);
 
-    const { data: created, error } = await supabase
+    const { data: created, error } = await asLoose(supabase)
       .from("tracked_queries")
       .insert({
         brand_id: data.brandId,
         user_id: userId,
         question: data.question,
         region: data.region?.trim() || null,
+        keyword: data.keyword?.trim() || null,
         source: "custom",
       })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
-    return created;
+    return created as {
+      id: string;
+      question: string;
+      region: string | null;
+      keyword: string | null;
+      source: string;
+    } | null;
   });
 
 export const removeQuery = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    await context.supabase.from("tracked_queries").delete().eq("id", data.id).eq("user_id", context.userId);
+    await context.supabase
+      .from("tracked_queries")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     return { ok: true };
+  });
+
+export const getBrandBrain = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ brandId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const db = asLoose(context.supabase);
+    const [{ data: products }, { data: facts }, { data: keywords }] = await Promise.all([
+      db
+        .from<BrandProduct[]>("brand_products")
+        .select("*")
+        .eq("brand_id", data.brandId)
+        .order("sort_order", { ascending: true }),
+      db
+        .from<BrandFact[]>("brand_facts")
+        .select("*")
+        .eq("brand_id", data.brandId)
+        .order("created_at", { ascending: true }),
+      db
+        .from<BrandKeyword[]>("brand_keywords")
+        .select("*")
+        .eq("brand_id", data.brandId)
+        .order("priority", { ascending: true }),
+    ]);
+    return {
+      products: products ?? [],
+      facts: facts ?? [],
+      keywords: keywords ?? [],
+    };
+  });
+
+export const saveBrandProducts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        brandId: z.string().uuid(),
+        products: z
+          .array(
+            z.object({
+              name: z.string().min(1).max(160),
+              category: z.string().max(80).nullable().optional(),
+              description: z.string().max(500).nullable().optional(),
+            }),
+          )
+          .max(50),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const db = asLoose(context.supabase);
+    await db.from("brand_products").delete().eq("brand_id", data.brandId);
+    if (data.products.length === 0) return { products: [] };
+    const { data: created, error } = await db
+      .from<BrandProduct[]>("brand_products")
+      .insert(
+        data.products.map((p, i) => ({
+          brand_id: data.brandId,
+          name: p.name,
+          category: p.category?.trim() || null,
+          description: p.description?.trim() || null,
+          sort_order: i,
+        })),
+      )
+      .select("*");
+    if (error) throw new Error(error.message);
+    return { products: created ?? [] };
+  });
+
+export const saveBrandFacts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        brandId: z.string().uuid(),
+        facts: z
+          .array(
+            z.object({
+              kind: z.enum(["fact", "messaging"]),
+              content: z.string().min(1).max(1000),
+              sourceUrl: z.string().max(300).nullable().optional(),
+            }),
+          )
+          .max(30),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const db = asLoose(context.supabase);
+    await db.from("brand_facts").delete().eq("brand_id", data.brandId);
+    if (data.facts.length === 0) return { facts: [] };
+    const { data: created, error } = await db
+      .from<BrandFact[]>("brand_facts")
+      .insert(
+        data.facts.map((f) => ({
+          brand_id: data.brandId,
+          kind: f.kind,
+          content: f.content,
+          source_url: f.sourceUrl?.trim() || null,
+        })),
+      )
+      .select("*");
+    if (error) throw new Error(error.message);
+    return { facts: created ?? [] };
+  });
+
+export const saveBrandKeywords = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        brandId: z.string().uuid(),
+        keywords: z
+          .array(
+            z.object({
+              keyword: z.string().min(1).max(80),
+              priority: z.number().int().min(1).max(9),
+            }),
+          )
+          .max(40),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const db = asLoose(context.supabase);
+    await db.from("brand_keywords").delete().eq("brand_id", data.brandId);
+    if (data.keywords.length === 0) return { keywords: [] };
+    const { data: created, error } = await db
+      .from<BrandKeyword[]>("brand_keywords")
+      .insert(
+        data.keywords.map((k) => ({
+          brand_id: data.brandId,
+          keyword: k.keyword,
+          priority: k.priority,
+        })),
+      )
+      .select("*");
+    if (error) throw new Error(error.message);
+    return { keywords: created ?? [] };
+  });
+
+export const getSnapshotAnswers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: snap } = await context.supabase
+      .from("snapshots")
+      .select("id, brand_id, created_at")
+      .eq("id", data.id)
+      .single();
+    if (!snap) throw new Error("Snapshot not found");
+    const { data: full } = await context.supabase
+      .from("snapshots")
+      .select("raw_results")
+      .eq("id", data.id)
+      .single();
+    const results = ((full?.raw_results as { results?: never[] } | null)?.results ?? []) as never[];
+
+    const { data: prev } = await context.supabase
+      .from("snapshots")
+      .select("id, created_at")
+      .eq("brand_id", snap.brand_id)
+      .eq("status", "complete")
+      .lt("created_at", snap.created_at)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    let previous: { id: string; created_at: string; results: never[] } | null = null;
+    if (prev) {
+      const { data: prevFull } = await context.supabase
+        .from("snapshots")
+        .select("raw_results")
+        .eq("id", prev.id)
+        .single();
+      previous = {
+        id: prev.id,
+        created_at: prev.created_at,
+        results: ((prevFull?.raw_results as { results?: never[] } | null)?.results ??
+          []) as never[],
+      };
+    }
+    return { results, previous };
   });
 
 export const startSnapshot = createServerFn({ method: "POST" })
@@ -165,13 +371,18 @@ export const startSnapshot = createServerFn({ method: "POST" })
       .eq("id", userId)
       .single();
     const plan = planOf(profile?.plan);
-    const used = profile?.usage_period_start === monthStart() ? (profile?.reports_this_period ?? 0) : 0;
+    const used =
+      profile?.usage_period_start === monthStart() ? (profile?.reports_this_period ?? 0) : 0;
 
     if (plan.id === "free" && used >= plan.reportsPerMonth) {
-      throw new Error("Your free plan includes one report a month. Upgrade to Starter for unlimited reports.");
+      throw new Error(
+        "Your free plan includes one report a month. Upgrade to Starter for unlimited reports.",
+      );
     }
     if (plan.id !== "free" && used >= plan.softCapPerMonth) {
-      throw new Error("You have hit an unusually high number of reports this month. Contact us to lift the limit.");
+      throw new Error(
+        "You have hit an unusually high number of reports this month. Contact us to lift the limit.",
+      );
     }
 
     const { data: running } = await supabase
@@ -206,7 +417,9 @@ export const listSnapshots = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows } = await context.supabase
       .from("snapshots")
-      .select("id, status, progress_message, report_json, brand_visibility, competitor_visibility, platform_stats, question_count, created_at, completed_at, error_message, access_token")
+      .select(
+        "id, status, progress_message, report_json, brand_visibility, competitor_visibility, platform_stats, question_count, created_at, completed_at, error_message, access_token",
+      )
       .eq("brand_id", data.brandId)
       .order("created_at", { ascending: false })
       .limit(60);
@@ -217,12 +430,18 @@ export const getSnapshot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { data: snap } = await context.supabase.from("snapshots").select("*").eq("id", data.id).single();
+    const { data: snap } = await context.supabase
+      .from("snapshots")
+      .select("*")
+      .eq("id", data.id)
+      .single();
     if (!snap) throw new Error("Snapshot not found");
     let pdfUrl: string | null = null;
     if (snap.report_path) {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const signed = await supabaseAdmin.storage.from("reports").createSignedUrl(snap.report_path, 60 * 60);
+      const signed = await supabaseAdmin.storage
+        .from("reports")
+        .createSignedUrl(snap.report_path, 60 * 60);
       pdfUrl = signed.data?.signedUrl ?? null;
     }
     return { snapshot: snap, pdfUrl };
@@ -235,7 +454,11 @@ export const startCheckout = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId, claims } = context;
-    const { data: profile } = await supabase.from("profiles").select("email").eq("id", userId).single();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("id", userId)
+      .single();
     const email = profile?.email || (claims["email"] as string | undefined) || "";
     if (!email) throw new Error("Your account has no email address.");
 
@@ -252,7 +475,9 @@ export const startCheckout = createServerFn({ method: "POST" })
 
 export const confirmCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ reference: z.string().min(4).max(200) }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ reference: z.string().min(4).max(200) }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const { verifyTransaction, findSubscription } = await import("./paystack.server");

@@ -139,7 +139,13 @@ function bar(ctx: Ctx, label: string, pct: number, highlight: boolean) {
   });
   const barX = MARGIN + 190;
   const barW = CONTENT_W - 230;
-  ctx.page.drawRectangle({ x: barX, y: ctx.y - 12, width: barW, height: 9, color: rgb(0.918, 0.949, 0.984) });
+  ctx.page.drawRectangle({
+    x: barX,
+    y: ctx.y - 12,
+    width: barW,
+    height: 9,
+    color: rgb(0.918, 0.949, 0.984),
+  });
   ctx.page.drawRectangle({
     x: barX,
     y: ctx.y - 12,
@@ -174,7 +180,7 @@ export async function renderReportPdf(input: {
   const serifBold = await doc.embedFont(StandardFonts.TimesRomanBold);
 
   const publisher = input.branding.whiteLabel
-    ? (input.branding.agencyName?.trim() || "Prepared by your agency")
+    ? input.branding.agencyName?.trim() || "Prepared by your agency"
     : "Mercercroft";
 
   const ctx: Ctx = {
@@ -241,7 +247,7 @@ export async function renderReportPdf(input: {
   text(ctx, "SCOPE", { size: 8, font: bold, color: ACCENT, leading: 16 });
   text(
     ctx,
-    `${input.questionCount} buyer-intent questions in ${input.industry}, tested across ChatGPT (OpenAI), Google Gemini and Perplexity.`,
+    `${input.questionCount} buyer-intent questions in ${input.industry}, asked of the monitored AI assistants through their web interfaces.`,
     { gap: 12 },
   );
   text(ctx, "COMPETITIVE SET", { size: 8, font: bold, color: ACCENT, leading: 16 });
@@ -271,15 +277,82 @@ export async function renderReportPdf(input: {
     text(ctx, platform.summary, { leading: 15, gap: 8 });
     for (const ex of platform.exampleExcerpts.slice(0, 2)) {
       ensure(ctx, 60);
-      text(ctx, `Q: ${ex.question}`, { size: 9.5, font: bold, color: MUTED, indent: 12, leading: 14 });
+      text(ctx, `Q: ${ex.question}`, {
+        size: 9.5,
+        font: bold,
+        color: MUTED,
+        indent: 12,
+        leading: 14,
+      });
       text(ctx, `"${ex.excerpt}"`, { size: 9.5, font: ctx.serif, indent: 12, leading: 14, gap: 6 });
     }
     ctx.y -= 8;
   }
 
+  // ---------- Product map & keywords ----------
+  newPage(ctx);
+  sectionHeading(ctx, "03", "Product map & keywords");
+  if (input.report.productVisibility && input.report.productVisibility.length > 0) {
+    text(ctx, "Share of AI answers that recommend each product", { size: 11, font: bold, gap: 10 });
+    for (const product of input.report.productVisibility) {
+      bar(ctx, product.product, product.visibility, true);
+    }
+    for (const product of input.report.productVisibility.slice(0, 6)) {
+      ensure(ctx, 30);
+      const by = product.byPlatform.map((p) => `${p.platform} ${p.visibility}%`).join("  |  ");
+      text(ctx, `${product.product}: ${by}`, {
+        size: 9,
+        font: ctx.serif,
+        color: MUTED,
+        leading: 13,
+      });
+    }
+    ctx.y -= 8;
+  }
+  if (input.report.keywordVisibility && input.report.keywordVisibility.length > 0) {
+    ensure(ctx, 40);
+    text(ctx, "Visibility by keyword", { size: 11, font: bold, gap: 10 });
+    for (const k of input.report.keywordVisibility.slice(0, 12))
+      bar(ctx, k.keyword, k.visibility, false);
+  }
+
+  // ---------- Sentiment ----------
+  const sentiment = input.report.sentiment;
+  if (sentiment && sentiment.overall.sample > 0) {
+    newPage(ctx);
+    sectionHeading(ctx, "04", "How assistants talk about you");
+    const pctOf = (n: number, sample: number) =>
+      sample === 0 ? 0 : Math.round((n / sample) * 100);
+    const overall = sentiment.overall;
+    ensure(ctx, 60);
+    text(ctx, "When your brand is mentioned", { size: 11, font: bold, gap: 8 });
+    bar(ctx, "Positive", pctOf(overall.positive, overall.sample), true);
+    bar(ctx, "Neutral", pctOf(overall.neutral, overall.sample), false);
+    bar(ctx, "Negative", pctOf(overall.negative, overall.sample), false);
+    text(
+      ctx,
+      `${overall.sample} mention${overall.sample === 1 ? "" : "s"} scored across the monitored assistants.`,
+      {
+        size: 9.5,
+        font: ctx.serif,
+        color: MUTED,
+        gap: 14,
+      },
+    );
+    for (const platform of sentiment.byPlatform) {
+      if (platform.sample === 0) continue;
+      ensure(ctx, 26);
+      text(
+        ctx,
+        `${platform.platform}: ${pctOf(platform.positive, platform.sample)}% positive, ${pctOf(platform.neutral, platform.sample)}% neutral, ${pctOf(platform.negative, platform.sample)}% negative`,
+        { size: 10, leading: 15, indent: 12 },
+      );
+    }
+  }
+
   // ---------- Why you're losing ----------
   newPage(ctx);
-  sectionHeading(ctx, "03", "Clearing the fog");
+  sectionHeading(ctx, "05", "Clearing the fog");
   for (const point of input.report.whyLosing) {
     ensure(ctx, 40);
     ctx.page.drawRectangle({ x: MARGIN, y: ctx.y - 12, width: 3, height: 10, color: ACCENT });
@@ -288,7 +361,7 @@ export async function renderReportPdf(input: {
 
   // ---------- Action items ----------
   newPage(ctx);
-  sectionHeading(ctx, "04", "Your action plan");
+  sectionHeading(ctx, "06", "Your action plan");
   input.report.actionItems.forEach((item, i) => {
     ensure(ctx, 90);
     text(ctx, `${i + 1}. ${item.title}`, { size: 12, font: bold, gap: 2 });
@@ -304,12 +377,12 @@ export async function renderReportPdf(input: {
 
   // ---------- Closing ----------
   newPage(ctx);
-  sectionHeading(ctx, "05", "The forecast");
+  sectionHeading(ctx, "07", "The forecast");
   text(ctx, input.report.closingNote, { leading: 16, gap: 18 });
   text(ctx, "Methodology", { size: 11, font: bold, gap: 6 });
   text(
     ctx,
-    `Each of the ${input.questionCount} buyer-intent questions was submitted to OpenAI, Google Gemini and Perplexity. Every answer was scanned for mentions of ${input.brandName} and of each competitor. Visibility percentages are the share of answers on that platform in which the brand appears. AI answers vary between runs; treat these figures as a directional benchmark to re-measure over time.`,
+    `Each of the ${input.questionCount} buyer-intent questions was submitted through the monitored assistants' own web interfaces, and every answer was scanned for mentions of ${input.brandName}, of each competitor, and of the tracked products. Visibility percentages are the share of answers on that platform in which the brand appears. AI answers vary between runs; treat these figures as a directional benchmark to re-measure over time.`,
     { size: 9.5, leading: 14, color: MUTED, gap: 18 },
   );
   text(ctx, `Prepared by ${publisher}.`, { size: 10, font: bold });

@@ -7,10 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
@@ -37,9 +36,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -77,11 +73,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "robots", content: "index, follow" },
       { title: "Mercercroft — Know how AI recommends your business" },
       {
         name: "description",
         content:
-          "Track how ChatGPT, Gemini and Perplexity recommend your business, watch the trend over time and get clear actions to improve it.",
+          "Track how ChatGPT, Gemini, Perplexity and DeepSeek recommend your business, watch the trend over time and get clear actions to improve it.",
       },
       { name: "author", content: "Mercercroft" },
       { property: "og:title", content: "Mercercroft — Know how AI recommends your business" },
@@ -90,9 +87,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Remove uncertainty. Understand how your business is being recommended by AI.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://mercercroft.com" },
+      { property: "og:site_name", content: "Mercercroft" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@mercercroft" },
+      { name: "twitter:title", content: "Mercercroft — Know how AI recommends your business" },
+      {
+        name: "twitter:description",
+        content: "Remove uncertainty. Understand how your business is being recommended by AI.",
+      },
     ],
     links: [
+      { rel: "canonical", href: "https://mercercroft.com" },
       {
         rel: "stylesheet",
         href: appCss,

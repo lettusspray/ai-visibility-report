@@ -1,110 +1,160 @@
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+import { submitAgentTask, type AskResult, type Msg } from "./browser-use.server";
+import { browserUseConfigured } from "./key-pool.server";
 
-export type Msg = { role: "system" | "user"; content: string };
+export type { Msg } from "./browser-use.server";
 
-async function chatCompletions(
-  endpoint: string,
-  apiKey: string,
-  model: string,
-  messages: Msg[],
-  maxTokens?: number,
-): Promise<string> {
-  const res = await fetch(endpoint, {
+const DEEPSEEK_API = "https://api.deepseek.com/chat/completions";
+const DEEPSEEK_MODEL = "deepseek-v4-flash";
+
+/** Analysis/generation LLM. Always uses DeepSeek v4 flash — no browser-use LLM fallback. */
+export async function callAI(_model: string, messages: Msg[], opts: { maxTokens?: number } = {}) {
+  return deepSeekLLM(messages, opts);
+}
+
+async function deepSeekLLM(messages: Msg[], opts: { maxTokens?: number } = {}): Promise<string> {
+  const apiKey = process.env["DEEPSEEK_API_KEY"];
+  if (!apiKey) throw new Error("DeepSeek is not configured (missing DEEPSEEK_API_KEY).");
+  const payload: Record<string, unknown> = {
+    model: DEEPSEEK_MODEL,
+    messages,
+    stream: false,
+    thinking: { type: "disabled" },
+  };
+  if (opts.maxTokens) payload["max_tokens"] = opts.maxTokens;
+  const res = await fetch(DEEPSEEK_API, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model,
-      messages,
-      ...(maxTokens ? { max_completion_tokens: maxTokens } : {}),
-    }),
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`${endpoint} ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  if (!res.ok) throw new Error(`DeepSeek ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   return json.choices?.[0]?.message?.content ?? "";
 }
 
-/** Lovable AI Gateway (OpenAI + Gemini models). Used for generation and analysis too. */
-export async function callAI(model: string, messages: Msg[], opts: { maxTokens?: number } = {}) {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) throw new Error("AI gateway is not configured (missing LOVABLE_API_KEY).");
-  return chatCompletions(GATEWAY, apiKey, model, messages, opts.maxTokens);
-}
-
 /**
- * Answer-engine registry. Every engine is a secret-backed adapter with the same
- * shape, so new coverage (Claude, DeepSeek, ...) is a new entry here and nothing else.
+ * Answer-engine registry. Every engine drives a real browser through Browser Use
+ * hosted agents, so the answers match what a person actually sees in the web UI
+ * (model version, UI prompts, citations) rather than what an API returns.
  */
 export type Engine = {
   id: string;
   label: string;
-  /** Engines with no configured credential are skipped rather than failing a run. */
+  /** Engines with no credential or saved profile are skipped rather than failing a run. */
   available: () => boolean;
-  ask: (messages: Msg[]) => Promise<string>;
+  ask: (messages: Msg[]) => Promise<AskResult>;
 };
 
-const ENGINES: Engine[] = [
+type SiteEngine = {
+  id: string;
+  label: string;
+  site: string;
+  loginHint: string;
+  profileEnv?: string;
+  /** Engines that work logged-out run immediately; others need a saved profile (M2). */
+  loggedOutOk: boolean;
+};
+
+const SITES: SiteEngine[] = [
   {
-    id: "openai",
-    label: "ChatGPT",
-    available: () => Boolean(process.env["LOVABLE_API_KEY"]),
-    ask: (messages) => callAI("openai/gpt-5-mini", messages),
-  },
-  {
-    id: "gemini",
-    label: "Gemini",
-    available: () => Boolean(process.env["LOVABLE_API_KEY"]),
-    ask: (messages) => callAI("google/gemini-2.5-flash", messages),
-  },
-  {
-    id: "perplexity",
+    id: "browser-perplexity",
     label: "Perplexity",
-    available: () => Boolean(process.env["PERPLEXITY_API_KEY"]),
-    ask: (messages) =>
-      chatCompletions(
-        "https://api.perplexity.ai/chat/completions",
-        process.env["PERPLEXITY_API_KEY"]!,
-        "sonar",
-        messages,
-      ),
-  },
-  // Reserved slots: add the credential as a secret and these light up unchanged.
-  {
-    id: "claude",
-    label: "Claude",
-    available: () => Boolean(process.env["ANTHROPIC_API_KEY"]),
-    ask: async (messages) => {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": process.env["ANTHROPIC_API_KEY"]!,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 700,
-          system: messages.filter((m) => m.role === "system").map((m) => m.content).join("\n"),
-          messages: messages.filter((m) => m.role === "user").map((m) => ({ role: "user", content: m.content })),
-        }),
-      });
-      if (!res.ok) throw new Error(`Anthropic ${res.status}`);
-      const json = (await res.json()) as { content?: { text?: string }[] };
-      return json.content?.map((c) => c.text ?? "").join("") ?? "";
-    },
+    site: "https://www.perplexity.ai",
+    loginHint: "Use the site as a logged-out visitor if no profile is saved.",
+    profileEnv: "BROWSER_USE_PROFILE_PERPLEXITY",
+    loggedOutOk: true,
   },
   {
-    id: "deepseek",
+    id: "browser-deepseek",
     label: "DeepSeek",
-    available: () => Boolean(process.env["DEEPSEEK_API_KEY"]),
-    ask: (messages) =>
-      chatCompletions(
-        "https://api.deepseek.com/chat/completions",
-        process.env["DEEPSEEK_API_KEY"]!,
-        "deepseek-chat",
-        messages,
-      ),
+    site: "https://chat.deepseek.com",
+    loginHint: "Use the site as a logged-out visitor if no profile is saved.",
+    profileEnv: "BROWSER_USE_PROFILE_DEEPSEEK",
+    loggedOutOk: true,
+  },
+  {
+    id: "browser-chatgpt",
+    label: "ChatGPT",
+    site: "https://chatgpt.com",
+    loginHint: "Use the site as a logged-out visitor if no profile is saved.",
+    profileEnv: "BROWSER_USE_PROFILE_CHATGPT",
+    loggedOutOk: true,
+  },
+  {
+    id: "browser-gemini",
+    label: "Gemini",
+    site: "https://gemini.google.com/app",
+    loginHint: "A saved profile must already be signed in; do not attempt to log in.",
+    profileEnv: "BROWSER_USE_PROFILE_GEMINI",
+    loggedOutOk: false,
+  },
+  {
+    id: "browser-claude",
+    label: "Claude",
+    site: "https://claude.ai",
+    loginHint: "A saved profile must already be signed in; do not attempt to log in.",
+    profileEnv: "BROWSER_USE_PROFILE_CLAUDE",
+    loggedOutOk: false,
+  },
+  // Reserved slots: add a saved profile and these light up unchanged.
+  {
+    id: "browser-metai",
+    label: "Meta AI",
+    site: "https://www.meta.ai",
+    loginHint: "A saved profile must already be signed in; do not attempt to log in.",
+    profileEnv: "BROWSER_USE_PROFILE_METAI",
+    loggedOutOk: false,
+  },
+  {
+    id: "browser-grok",
+    label: "Grok",
+    site: "https://grok.com",
+    loginHint: "A saved profile must already be signed in; do not attempt to log in.",
+    profileEnv: "BROWSER_USE_PROFILE_GROK",
+    loggedOutOk: false,
   },
 ];
+
+function siteAvailable(site: SiteEngine): boolean {
+  if (!browserUseConfigured()) return false;
+  if (site.loggedOutOk) return true;
+  return Boolean(process.env[site.profileEnv ?? ""]);
+}
+
+function buildTask(site: SiteEngine, messages: Msg[]): string {
+  const system = messages
+    .filter((m) => m.role === "system")
+    .map((m) => m.content)
+    .join("\n");
+  const question = messages
+    .filter((m) => m.role === "user")
+    .map((m) => m.content)
+    .join("\n");
+  return [
+    `You operate a monitoring browser. Navigate to ${site.site}.`,
+    site.loginHint,
+    "Do not create an account and do not answer the question yourself.",
+    "",
+    `Enter the exact text below into the chat input on that site and press send:`,
+    question,
+    "",
+    "Wait until the answer has finished generating completely (no more streaming or thinking indicators). Then return:",
+    "1. The full answer text the visitor sees, verbatim and unsummarized.",
+    "2. A final line beginning with SOURCES: followed by each source or citation URL the interface shows, separated by spaces.",
+    "",
+    system,
+  ].join("\n");
+}
+
+const ENGINES: Engine[] = SITES.map((site) => ({
+  id: site.id,
+  label: site.label,
+  available: () => siteAvailable(site),
+  ask: async (messages: Msg[]): Promise<AskResult> =>
+    submitAgentTask({
+      task: buildTask(site, messages),
+      proxyCountryCode: process.env["BROWSER_USE_PROXY_COUNTRY"] ?? null,
+    }),
+}));
 
 export function activeEngines(): Engine[] {
   return ENGINES.filter((e) => e.available());
