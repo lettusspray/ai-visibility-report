@@ -65,6 +65,8 @@
   --color-surface-deep-foreground: var(--surface-deep-foreground);
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
+  --color-storm: var(--storm);
+  --color-storm-soft: var(--storm-soft);
   --shadow-panel: var(--shadow-panel);
 }
 
