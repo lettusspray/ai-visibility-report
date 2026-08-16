@@ -15,7 +15,6 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as BillingCallbackRouteImport } from './routes/billing.callback'
-import { Route as ReportRouteImport } from './routes/report.'
 import { Route as ReportTokenRouteImport } from './routes/report.$token'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 
@@ -48,11 +47,6 @@ const BillingCallbackRoute = BillingCallbackRouteImport.update({
   path: '/billing/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReportRoute = ReportRouteImport.update({
-  id: '/report/',
-  path: '/report/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ReportTokenRoute = ReportTokenRouteImport.update({
   id: '/report/$token',
   path: '/report/$token',
@@ -69,7 +63,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/report/': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/billing/callback': typeof BillingCallbackRoute
   '/report/$token': typeof ReportTokenRoute
@@ -79,7 +72,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/billing/callback': typeof BillingCallbackRoute
   '/report/$token': typeof ReportTokenRoute
@@ -91,7 +83,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/report/': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/billing/callback': typeof BillingCallbackRoute
   '/report/$token': typeof ReportTokenRoute
@@ -103,7 +94,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/report/'
     | '/dashboard'
     | '/billing/callback'
     | '/report/$token'
@@ -113,7 +103,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/report'
     | '/dashboard'
     | '/billing/callback'
     | '/report/$token'
@@ -124,7 +113,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/admin'
     | '/auth'
-    | '/report/'
     | '/_authenticated/dashboard'
     | '/billing/callback'
     | '/report/$token'
@@ -136,7 +124,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
-  ReportRoute: typeof ReportRoute
   BillingCallbackRoute: typeof BillingCallbackRoute
   ReportTokenRoute: typeof ReportTokenRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
@@ -186,13 +173,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/report/': {
-      id: '/report/'
-      path: '/report'
-      fullPath: '/report/'
-      preLoaderRoute: typeof ReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/report/$token': {
       id: '/report/$token'
       path: '/report/$token'
@@ -226,7 +206,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
-  ReportRoute: ReportRoute,
   BillingCallbackRoute: BillingCallbackRoute,
   ReportTokenRoute: ReportTokenRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,

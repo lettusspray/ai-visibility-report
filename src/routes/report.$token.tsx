@@ -6,7 +6,7 @@ import { Logo } from "@/components/site-header";
 import { ClearingSky, SunMark } from "@/components/weather";
 import { getSharedSnapshot } from "@/lib/public.functions";
 
-export const Route = createFileRoute("/report/")({
+export const Route = createFileRoute("/report/$token")({
   head: () => ({
     meta: [
       { title: "AI visibility report — Mercercroft" },
