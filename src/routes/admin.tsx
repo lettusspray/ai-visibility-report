@@ -1,153 +1,126 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Loader2, RefreshCw } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 
-import { SiteFooter, SiteHeader } from "@/components/site-header";
-import { adminListOrders, adminMarkPaidAndStart, adminRegenerate } from "@/lib/orders.functions";
+import { Logo } from "@/components/site-header";
+import { adminOverview, adminRegenerate } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
+  ssr: false,
   head: () => ({
     meta: [
-      { title: "Admin — VisibilityAudit" },
-      { name: "description", content: "Internal order console for VisibilityAudit reports." },
-      { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Admin — VisibilityAudit" },
-      { property: "og:description", content: "Internal order console." },
+      { title: "Admin — Mercercroft" },
+      { name: "description", content: "Internal Mercercroft admin view for accounts, plans and snapshot runs." },
+      { property: "og:title", content: "Admin — Mercercroft" },
+      { property: "og:description", content: "Internal admin view." },
     ],
   }),
   component: Admin,
 });
 
-type Order = Awaited<ReturnType<typeof adminListOrders>>[number];
+type Overview = Awaited<ReturnType<typeof adminOverview>>;
 
 function Admin() {
-  const list = useServerFn(adminListOrders);
-  const regen = useServerFn(adminRegenerate);
-  const markPaid = useServerFn(adminMarkPaidAndStart);
-
+  const overview = useServerFn(adminOverview);
+  const regenerate = useServerFn(adminRegenerate);
   const [password, setPassword] = useState("");
-  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [data, setData] = useState<Overview | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   async function load(pw: string) {
-    setBusy(true);
     setError(null);
     try {
-      setOrders(await list({ data: { password: pw } }));
+      setData(await overview({ data: { password: pw } }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load orders.");
-    } finally {
-      setBusy(false);
+      setError(err instanceof Error ? err.message : "Could not load.");
     }
   }
 
-  async function act(fn: typeof regen, orderId: string) {
-    setBusy(true);
-    try {
-      await fn({ data: { password, orderId, origin: window.location.origin } });
-      await load(password);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Action failed.");
-      setBusy(false);
-    }
+  if (!data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <form
+          onSubmit={(e) => { e.preventDefault(); load(password); }}
+          className="cloud-card w-full max-w-sm p-8"
+        >
+          <Logo />
+          <h1 className="mt-5 text-xl font-semibold">Admin access</h1>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Shared password"
+            className="mt-4 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm"
+          />
+          <button className="mt-4 w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Enter</button>
+          {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+        </form>
+      </div>
+    );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-14">
-        <h1 className="text-3xl font-semibold">Orders</h1>
-
-        {!orders ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void load(password);
-            }}
-            className="panel mt-8 max-w-sm space-y-4 p-6"
-          >
-            <label className="block text-sm font-medium">Admin password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-input bg-card px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
-            />
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
-            <button
-              type="submit"
-              disabled={busy}
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-60"
-            >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Sign in
-            </button>
-          </form>
-        ) : (
-          <>
-            <div className="mt-4 flex items-center gap-3">
-              <button
-                onClick={() => void load(password)}
-                disabled={busy}
-                className="inline-flex items-center gap-2 rounded-md border border-input bg-card px-4 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
-              >
-                <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} /> Refresh
-              </button>
-              {error ? <span className="text-sm text-destructive">{error}</span> : null}
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card/70">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Logo />
+          <button onClick={() => load(password)} className="text-sm text-muted-foreground hover:text-foreground">Refresh</button>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-6 py-10">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[["Accounts", data.totals.accounts], ["Paid accounts", data.totals.paid], ["Recent snapshots", data.totals.snapshots]].map(([label, value]) => (
+            <div key={label as string} className="cloud-card p-6">
+              <p className="text-eyebrow">{label}</p>
+              <p className="font-display text-4xl font-semibold">{value}</p>
             </div>
+          ))}
+        </div>
 
-            <div className="panel mt-6 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-border text-xs text-muted-foreground">
-                  <tr>
-                    {["Created", "Brand", "Email", "Tier", "Payment", "Status", "Actions"].map((h) => (
-                      <th key={h} className="px-4 py-3 font-medium">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o) => (
-                    <tr key={o.id} className="border-b border-border/60 last:border-0">
-                      <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
-                        {new Date(o.created_at as string).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 font-medium">{o.brand_name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{o.email}</td>
-                      <td className="px-4 py-3">{o.tier === "whitelabel" ? "White label" : "Standard"}</td>
-                      <td className="px-4 py-3">{o.payment_status}</td>
-                      <td className="px-4 py-3">
-                        <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs">{o.status}</span>
-                        {o.error_message ? (
-                          <div className="mt-1 max-w-xs text-xs text-destructive">{o.error_message}</div>
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          <a href={`/report/${o.access_token}`} className="text-accent underline">
-                            View
-                          </a>
-                          <button onClick={() => void act(regen, o.id)} className="underline">
-                            Regenerate
-                          </button>
-                          {o.payment_status !== "paid" ? (
-                            <button onClick={() => void act(markPaid, o.id)} className="underline">
-                              Mark paid + run
-                            </button>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+        <h2 className="mt-10 text-xl font-semibold">Accounts</h2>
+        <div className="cloud-card mt-4 overflow-x-auto p-2">
+          <table className="w-full min-w-160 text-left text-sm">
+            <thead className="text-muted-foreground">
+              <tr><th className="p-3">Email</th><th className="p-3">Plan</th><th className="p-3">Status</th><th className="p-3">Reports</th><th className="p-3">Brands</th></tr>
+            </thead>
+            <tbody>
+              {data.accounts.map((a) => (
+                <tr key={a.id} className="border-t border-border/70">
+                  <td className="p-3">{a.email}</td>
+                  <td className="p-3">{a.plan}</td>
+                  <td className="p-3 text-muted-foreground">{a.subscription_status}</td>
+                  <td className="p-3">{a.reports_this_period}</td>
+                  <td className="p-3 text-muted-foreground">{a.brands.join(", ") || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h2 className="mt-10 text-xl font-semibold">Recent snapshots</h2>
+        <div className="cloud-card mt-4 overflow-x-auto p-2">
+          <table className="w-full min-w-160 text-left text-sm">
+            <thead className="text-muted-foreground">
+              <tr><th className="p-3">Brand</th><th className="p-3">Status</th><th className="p-3">Visibility</th><th className="p-3">Created</th><th className="p-3" /></tr>
+            </thead>
+            <tbody>
+              {data.snapshots.map((s) => (
+                <tr key={s.id} className="border-t border-border/70">
+                  <td className="p-3">{s.brandName}</td>
+                  <td className="p-3">{s.status}{s.error_message ? ` — ${s.error_message}` : ""}</td>
+                  <td className="p-3">{s.brand_visibility != null ? `${Math.round(s.brand_visibility)}%` : "—"}</td>
+                  <td className="p-3 text-muted-foreground">{new Date(s.created_at).toLocaleString()}</td>
+                  <td className="p-3">
+                    <button onClick={() => regenerate({ data: { password, snapshotId: s.id } })} className="rounded-full border border-input px-4 py-1.5 text-xs hover:bg-secondary">
+                      Regenerate
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </main>
-      <SiteFooter />
     </div>
   );
 }
