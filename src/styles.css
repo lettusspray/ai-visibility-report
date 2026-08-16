@@ -194,3 +194,20 @@
   );
   background-size: 96px 100%;
 }
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
+
+@utility cloud-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-panel);
+}
