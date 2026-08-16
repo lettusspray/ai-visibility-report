@@ -7,11 +7,11 @@ const PAGE_H = 841.89;
 const MARGIN = 56;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
-const INK = rgb(0.13, 0.15, 0.19);
-const MUTED = rgb(0.42, 0.45, 0.5);
-const ACCENT = rgb(0.05, 0.53, 0.58);
-const LINE = rgb(0.86, 0.88, 0.9);
-const DEEP = rgb(0.11, 0.15, 0.22);
+const INK = rgb(0.106, 0.227, 0.361);
+const MUTED = rgb(0.361, 0.478, 0.6);
+const ACCENT = rgb(0.941, 0.663, 0.231);
+const LINE = rgb(0.812, 0.878, 0.941);
+const DEEP = rgb(0.106, 0.227, 0.361);
 
 export type BrandingOptions = {
   whiteLabel: boolean;
@@ -139,13 +139,13 @@ function bar(ctx: Ctx, label: string, pct: number, highlight: boolean) {
   });
   const barX = MARGIN + 190;
   const barW = CONTENT_W - 230;
-  ctx.page.drawRectangle({ x: barX, y: ctx.y - 12, width: barW, height: 9, color: rgb(0.93, 0.94, 0.95) });
+  ctx.page.drawRectangle({ x: barX, y: ctx.y - 12, width: barW, height: 9, color: rgb(0.918, 0.949, 0.984) });
   ctx.page.drawRectangle({
     x: barX,
     y: ctx.y - 12,
     width: (barW * value) / 100,
     height: 9,
-    color: highlight ? ACCENT : rgb(0.66, 0.69, 0.73),
+    color: highlight ? ACCENT : rgb(0.361, 0.478, 0.6),
   });
   ctx.page.drawText(`${value}%`, {
     x: PAGE_W - MARGIN - 30,
@@ -175,7 +175,7 @@ export async function renderReportPdf(input: {
 
   const publisher = input.branding.whiteLabel
     ? (input.branding.agencyName?.trim() || "Prepared by your agency")
-    : "VisibilityAudit";
+    : "Mercercroft";
 
   const ctx: Ctx = {
     doc,
@@ -185,7 +185,7 @@ export async function renderReportPdf(input: {
     bold,
     serif,
     serifBold,
-    footer: `${publisher}  |  AI Search Visibility Report  |  ${input.brandName}`,
+    footer: `${publisher}  |  AI Visibility Snapshot  |  ${input.brandName}`,
     pageNo: 1,
   };
 
@@ -218,9 +218,9 @@ export async function renderReportPdf(input: {
     y: coverTextY,
     size: 9,
     font: bold,
-    color: rgb(0.62, 0.78, 0.8),
+    color: rgb(0.941, 0.663, 0.231),
   });
-  cover.drawText("AI Search Visibility Report", {
+  cover.drawText("AI Visibility Snapshot", {
     x: MARGIN,
     y: coverTextY - 44,
     size: 28,
@@ -232,7 +232,7 @@ export async function renderReportPdf(input: {
     y: coverTextY - 76,
     size: 16,
     font: regular,
-    color: rgb(0.78, 0.84, 0.87),
+    color: rgb(0.82, 0.88, 0.94),
   });
 
   ctx.y = PAGE_H - 300;
@@ -253,7 +253,7 @@ export async function renderReportPdf(input: {
 
   // ---------- Executive summary ----------
   newPage(ctx);
-  sectionHeading(ctx, "01", "Executive summary");
+  sectionHeading(ctx, "01", "Current conditions");
   text(ctx, input.report.executiveSummary, { leading: 16, gap: 16 });
 
   text(ctx, "Share of AI answers mentioning each brand", { size: 11, font: bold, gap: 10 });
@@ -262,7 +262,7 @@ export async function renderReportPdf(input: {
 
   // ---------- Platform breakdown ----------
   newPage(ctx);
-  sectionHeading(ctx, "02", "Platform breakdown");
+  sectionHeading(ctx, "02", "Conditions by engine");
   for (const platform of input.report.platforms) {
     ensure(ctx, 120);
     text(ctx, platform.platform, { size: 13, font: serifBold, gap: 4 });
@@ -279,7 +279,7 @@ export async function renderReportPdf(input: {
 
   // ---------- Why you're losing ----------
   newPage(ctx);
-  sectionHeading(ctx, "03", "Why you are losing these answers");
+  sectionHeading(ctx, "03", "Clearing the fog");
   for (const point of input.report.whyLosing) {
     ensure(ctx, 40);
     ctx.page.drawRectangle({ x: MARGIN, y: ctx.y - 12, width: 3, height: 10, color: ACCENT });
@@ -288,7 +288,7 @@ export async function renderReportPdf(input: {
 
   // ---------- Action items ----------
   newPage(ctx);
-  sectionHeading(ctx, "04", "Prioritised action plan");
+  sectionHeading(ctx, "04", "Your action plan");
   input.report.actionItems.forEach((item, i) => {
     ensure(ctx, 90);
     text(ctx, `${i + 1}. ${item.title}`, { size: 12, font: bold, gap: 2 });
@@ -304,7 +304,7 @@ export async function renderReportPdf(input: {
 
   // ---------- Closing ----------
   newPage(ctx);
-  sectionHeading(ctx, "05", "What happens next");
+  sectionHeading(ctx, "05", "The forecast");
   text(ctx, input.report.closingNote, { leading: 16, gap: 18 });
   text(ctx, "Methodology", { size: 11, font: bold, gap: 6 });
   text(

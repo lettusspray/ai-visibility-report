@@ -14,83 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      orders: {
+      brands: {
         Row: {
-          access_token: string
-          agency_logo_path: string | null
           agency_name: string | null
-          amount_cents: number
-          brand_name: string
-          brand_website: string
           competitors: string[]
           created_at: string
-          email: string
-          email_sent: boolean
-          error_message: string | null
           id: string
           industry: string
-          payment_status: string
+          name: string
+          target_customer: string
+          updated_at: string
+          user_id: string
+          website: string
+        }
+        Insert: {
+          agency_name?: string | null
+          competitors?: string[]
+          created_at?: string
+          id?: string
+          industry?: string
+          name: string
+          target_customer?: string
+          updated_at?: string
+          user_id: string
+          website?: string
+        }
+        Update: {
+          agency_name?: string | null
+          competitors?: string[]
+          created_at?: string
+          id?: string
+          industry?: string
+          name?: string
+          target_customer?: string
+          updated_at?: string
+          user_id?: string
+          website?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          email: string
+          full_name: string | null
+          id: string
+          paystack_customer_code: string | null
+          paystack_email_token: string | null
+          paystack_subscription_code: string | null
+          plan: string
+          reports_this_period: number
+          subscription_status: string
+          updated_at: string
+          usage_period_start: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          paystack_customer_code?: string | null
+          paystack_email_token?: string | null
+          paystack_subscription_code?: string | null
+          plan?: string
+          reports_this_period?: number
+          subscription_status?: string
+          updated_at?: string
+          usage_period_start?: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          paystack_customer_code?: string | null
+          paystack_email_token?: string | null
+          paystack_subscription_code?: string | null
+          plan?: string
+          reports_this_period?: number
+          subscription_status?: string
+          updated_at?: string
+          usage_period_start?: string
+        }
+        Relationships: []
+      }
+      snapshots: {
+        Row: {
+          access_token: string
+          brand_id: string
+          brand_visibility: number | null
+          competitor_visibility: Json | null
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          platform_stats: Json | null
           progress_message: string | null
+          question_count: number
           raw_results: Json | null
           report_json: Json | null
           report_path: string | null
           status: string
-          stripe_session_id: string | null
-          target_customer: string
-          tier: string
-          updated_at: string
+          user_id: string
         }
         Insert: {
           access_token?: string
-          agency_logo_path?: string | null
-          agency_name?: string | null
-          amount_cents?: number
-          brand_name: string
-          brand_website: string
-          competitors?: string[]
+          brand_id: string
+          brand_visibility?: number | null
+          competitor_visibility?: Json | null
+          completed_at?: string | null
           created_at?: string
-          email: string
-          email_sent?: boolean
           error_message?: string | null
           id?: string
-          industry: string
-          payment_status?: string
+          platform_stats?: Json | null
           progress_message?: string | null
+          question_count?: number
           raw_results?: Json | null
           report_json?: Json | null
           report_path?: string | null
           status?: string
-          stripe_session_id?: string | null
-          target_customer: string
-          tier?: string
-          updated_at?: string
+          user_id: string
         }
         Update: {
           access_token?: string
-          agency_logo_path?: string | null
-          agency_name?: string | null
-          amount_cents?: number
-          brand_name?: string
-          brand_website?: string
-          competitors?: string[]
+          brand_id?: string
+          brand_visibility?: number | null
+          competitor_visibility?: Json | null
+          completed_at?: string | null
           created_at?: string
-          email?: string
-          email_sent?: boolean
           error_message?: string | null
           id?: string
-          industry?: string
-          payment_status?: string
+          platform_stats?: Json | null
           progress_message?: string | null
+          question_count?: number
           raw_results?: Json | null
           report_json?: Json | null
           report_path?: string | null
           status?: string
-          stripe_session_id?: string | null
-          target_customer?: string
-          tier?: string
-          updated_at?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "snapshots_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracked_queries: {
+        Row: {
+          active: boolean
+          brand_id: string
+          created_at: string
+          id: string
+          question: string
+          region: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          brand_id: string
+          created_at?: string
+          id?: string
+          question: string
+          region?: string | null
+          source?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          brand_id?: string
+          created_at?: string
+          id?: string
+          question?: string
+          region?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracked_queries_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

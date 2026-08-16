@@ -11,10 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as BuyRouteImport } from './routes/buy'
 import { Route as ReportTokenRouteImport } from './routes/report.$token'
-import { Route as StatusTokenRouteImport } from './routes/status.$token'
-import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -26,86 +24,55 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BuyRoute = BuyRouteImport.update({
-  id: '/buy',
-  path: '/buy',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ReportTokenRoute = ReportTokenRouteImport.update({
   id: '/report/$token',
   path: '/report/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StatusTokenRoute = StatusTokenRouteImport.update({
-  id: '/status/$token',
-  path: '/status/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
-  id: '/api/public/stripe-webhook',
-  path: '/api/public/stripe-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiPublicPaystackWebhookRoute =
+  ApiPublicPaystackWebhookRouteImport.update({
+    id: '/api/public/paystack-webhook',
+    path: '/api/public/paystack-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/buy': typeof BuyRoute
   '/report/$token': typeof ReportTokenRoute
-  '/status/$token': typeof StatusTokenRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/buy': typeof BuyRoute
   '/report/$token': typeof ReportTokenRoute
-  '/status/$token': typeof StatusTokenRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/buy': typeof BuyRoute
   '/report/$token': typeof ReportTokenRoute
-  '/status/$token': typeof StatusTokenRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/admin'
-    | '/buy'
-    | '/report/$token'
-    | '/status/$token'
-    | '/api/public/stripe-webhook'
+  fullPaths: '/' | '/admin' | '/report/$token' | '/api/public/paystack-webhook'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/admin'
-    | '/buy'
-    | '/report/$token'
-    | '/status/$token'
-    | '/api/public/stripe-webhook'
+  to: '/' | '/admin' | '/report/$token' | '/api/public/paystack-webhook'
   id:
     | '__root__'
     | '/'
     | '/admin'
-    | '/buy'
     | '/report/$token'
-    | '/status/$token'
-    | '/api/public/stripe-webhook'
+    | '/api/public/paystack-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  BuyRoute: typeof BuyRoute
   ReportTokenRoute: typeof ReportTokenRoute
-  StatusTokenRoute: typeof StatusTokenRoute
-  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
+  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -124,13 +91,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buy': {
-      id: '/buy'
-      path: '/buy'
-      fullPath: '/buy'
-      preLoaderRoute: typeof BuyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/report/$token': {
       id: '/report/$token'
       path: '/report/$token'
@@ -138,18 +98,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/status/$token': {
-      id: '/status/$token'
-      path: '/status/$token'
-      fullPath: '/status/$token'
-      preLoaderRoute: typeof StatusTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/stripe-webhook': {
-      id: '/api/public/stripe-webhook'
-      path: '/api/public/stripe-webhook'
-      fullPath: '/api/public/stripe-webhook'
-      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+    '/api/public/paystack-webhook': {
+      id: '/api/public/paystack-webhook'
+      path: '/api/public/paystack-webhook'
+      fullPath: '/api/public/paystack-webhook'
+      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -158,10 +111,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  BuyRoute: BuyRoute,
   ReportTokenRoute: ReportTokenRoute,
-  StatusTokenRoute: StatusTokenRoute,
-  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
+  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
