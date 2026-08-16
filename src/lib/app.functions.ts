@@ -206,7 +206,7 @@ export const listSnapshots = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows } = await context.supabase
       .from("snapshots")
-      .select("id, status, progress_message, brand_visibility, competitor_visibility, platform_stats, question_count, created_at, completed_at, error_message, access_token")
+      .select("id, status, progress_message, report_json, brand_visibility, competitor_visibility, platform_stats, question_count, created_at, completed_at, error_message, access_token")
       .eq("brand_id", data.brandId)
       .order("created_at", { ascending: false })
       .limit(60);
