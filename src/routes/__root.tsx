@@ -77,17 +77,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "VisibilityAudit — AI Search Visibility Reports" },
+      { title: "Mercercroft — Know how AI recommends your business" },
       {
         name: "description",
         content:
-          "Done-for-you AI search visibility reports for marketing agencies. See how ChatGPT, Gemini and Perplexity answer your client's buyer questions.",
+          "Track how ChatGPT, Gemini and Perplexity recommend your business, watch the trend over time and get clear actions to improve it.",
       },
-      { name: "author", content: "VisibilityAudit" },
-      { property: "og:title", content: "VisibilityAudit — AI Search Visibility Reports" },
+      { name: "author", content: "Mercercroft" },
+      { property: "og:title", content: "Mercercroft — Know how AI recommends your business" },
       {
         property: "og:description",
-        content: "A white-label-ready PDF report showing where your client is invisible in AI answers.",
+        content: "Remove uncertainty. Understand how your business is being recommended by AI.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -101,7 +101,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
