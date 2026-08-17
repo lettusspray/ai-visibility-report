@@ -53,12 +53,6 @@ try {
 
 wrangler.vars = { ...wrangler.vars, ...serverVars };
 
-// Remove no_bundle so Cloudflare bundles the code at deploy time.
-// With no_bundle, createIsomorphicFn().server() (used internally by
-// @tanstack/start-client-core for createCsrfMiddleware) resolves to
-// undefined at runtime on Workers.
-delete wrangler.no_bundle;
-
 writeFileSync(wranglerPath, JSON.stringify(wrangler, null, 2) + "\n");
 console.log(
   `[inject-env] Injected ${Object.keys(serverVars).length} var(s) into wrangler.json: ${Object.keys(serverVars).join(", ")}`
