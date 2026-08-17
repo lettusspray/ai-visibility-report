@@ -2,14 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { SunBehindCloudMark } from "@/components/weather";
 
 export function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-accent-soft text-accent">
-        <SunBehindCloudMark className="h-6 w-6" />
-      </span>
       <span className="font-display text-[19px] font-semibold tracking-tight text-primary">
         Mercercroft
       </span>

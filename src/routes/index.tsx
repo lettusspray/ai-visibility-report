@@ -140,7 +140,7 @@ const comparison = [
     name: "Profound",
     price: "Enterprise, from ~$500 / mo",
     position:
-      "Answer-engine analytics for larger in-house teams. Enterprise pricing puts it out of reach for most agencies.",
+      "Answer-engine analytics for larger in-house teams. Too costly without product-level tracking or exports.",
   },
   {
     name: "Peec AI",
@@ -180,7 +180,7 @@ function Index() {
         <section className="border-b border-border">
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 md:grid-cols-[1.1fr_0.9fr] md:py-28">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-1.5 text-xs font-semibold text-accent">
+              <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-1.5 text-xs font-semibold text-foreground">
                 <SunBehindCloudMark className="h-4 w-4" />
                 AI visibility tracking
               </span>
