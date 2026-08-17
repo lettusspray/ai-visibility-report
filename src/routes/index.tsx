@@ -78,41 +78,41 @@ const steps = [
   {
     icon: CloudMark,
     title: "We map the questions",
-    body: "Up to 75 buyer-intent questions for your niche, tagged by product and keyword. Add your own with an optional region tag.",
+    body: "Up to 75 buyer-intent questions for your niche, tagged by product and keyword. Add your own with region tags.",
   },
   {
     icon: RainMark,
     title: "We ask every engine",
-    body: "ChatGPT, Gemini, Perplexity and DeepSeek answer each question through real browser sessions — the same results a person would see.",
+    body: "ChatGPT, Gemini, Perplexity and DeepSeek answer through real browser sessions — the same results a person would see, not API shortcuts.",
   },
   {
     icon: IsobarMark,
     title: "We chart the pressure",
-    body: "Each run is stored so you see visibility move over time. Product mentions, keyword visibility and sentiment are tracked per engine.",
+    body: "Each run is stored so you see visibility move over time. Product mentions, keyword visibility and sentiment tracked per engine.",
   },
   {
     icon: SunMark,
     title: "We clear the fog",
-    body: "A grounded two-pass analysis of why answers go elsewhere, with prioritised actions, an exportable PDF report and a shareable link.",
+    body: "A grounded two-pass analysis of why answers go elsewhere, with prioritised actions, an exportable PDF and a shareable link.",
   },
 ];
 
 const features = [
   {
     title: "Brand Brain",
-    body: "Tell us your products, key messaging and the keywords you care about. The snapshot pipeline uses this context to compute a product map, keyword visibility scores and per-engine sentiment.",
+    body: "Feed in your products, key messaging and target keywords. The pipeline uses this context to compute a product map, keyword visibility scores and per-engine sentiment — so you see exactly what AI assistants know about you.",
   },
   {
     title: "Product Map",
-    body: "See which of your products each engine actually mentions — and which it ignores. Broken down per platform so you know where to focus.",
+    body: "Which of your products does each engine actually mention — and which does it ignore? Broken down per platform so you know exactly where to focus your effort.",
   },
   {
     title: "Keyword Visibility",
-    body: "Track how often each target keyword appears across engines. Spot the gaps between what you say and what AI assistants repeat.",
+    body: "Track how often each target keyword appears across engines. Spot the gaps between what you say and what AI assistants repeat back to your customers.",
   },
   {
     title: "Sentiment Analysis",
-    body: "Every answer is tagged positive, neutral or negative with a one-line reason. See the overall mood and per-engine breakdown at a glance.",
+    body: "Every answer tagged positive, neutral or negative with a one-line reason. See the overall mood and per-engine breakdown at a glance — know when AI is singing your praises or warning people off.",
   },
 ];
 
@@ -120,32 +120,33 @@ const comparison = [
   {
     name: "Mercercroft",
     price: "Free · $99 · $149 / mo",
-    position: "Tracking plus a client-ready report export, white-label on paid plans.",
+    position:
+      "Full-stack visibility: product map, keyword tracking, sentiment, brand brain context, white-label PDF and shareable links. Starts free.",
+    edge: true,
   },
   {
     name: "ZeroRank",
     price: "From ~$99 / mo",
-    position: "AI search visibility monitoring with optimisation workflows.",
+    position:
+      "AI search monitoring with optimisation workflows. No product-level tracking, no sentiment analysis, no white-label exports.",
   },
   {
     name: "Ahrefs Brand Radar",
-    price: "Bundled with Ahrefs plans (from ~$129 / mo)",
-    position: "AI mention tracking inside the wider Ahrefs SEO suite.",
+    price: "Bundled with Ahrefs (from ~$129 / mo)",
+    position:
+      "AI mention tracking inside a wider SEO suite. Requires full Ahrefs subscription — no standalone AI visibility product.",
   },
   {
     name: "Profound",
     price: "Enterprise, from ~$500 / mo",
-    position: "Answer-engine analytics aimed at larger in-house teams.",
+    position:
+      "Answer-engine analytics for larger in-house teams. Enterprise pricing puts it out of reach for most agencies.",
   },
   {
     name: "Peec AI",
     price: "From ~€90 / mo",
-    position: "AI visibility dashboards for brands and agencies.",
-  },
-  {
-    name: "AirOps",
-    price: "From ~$199 / mo",
-    position: "Content workflow automation with AI-visibility measurement attached.",
+    position:
+      "AI visibility dashboards for brands and agencies. Dashboards only — no product map, no keyword tracking, no PDF export.",
   },
 ];
 
@@ -188,7 +189,8 @@ function Index() {
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
                 Track mentions, sentiment and citations across ChatGPT, Gemini, Perplexity and
-                DeepSeek — then get clear actions to be recommended more often.
+                DeepSeek — then get clear actions to be recommended more often. Your first snapshot
+                is free.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -221,6 +223,7 @@ function Index() {
                   ["ChatGPT", 44],
                   ["Gemini", 31],
                   ["Perplexity", 39],
+                  ["DeepSeek", 42],
                 ].map(([p, v]) => (
                   <div key={p as string}>
                     <div className="flex justify-between text-sm">
@@ -329,8 +332,9 @@ function Index() {
 
             <h3 className="mt-16 text-2xl font-semibold">How we compare</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Public pricing and positioning, as advertised by each product. Figures change; check
-              their sites for current rates.
+              What each product offers at its entry price. Mercercroft is the only one with product
+              mapping, keyword tracking, sentiment analysis, brand brain context and white-label
+              export — starting free.
             </p>
             <div className="mt-6 overflow-x-auto">
               <table className="w-full min-w-160 border-collapse text-left text-sm">
@@ -338,13 +342,23 @@ function Index() {
                   <tr className="border-b border-border text-muted-foreground">
                     <th className="py-3 pr-4 font-medium">Product</th>
                     <th className="py-3 pr-4 font-medium">Entry pricing</th>
-                    <th className="py-3 font-medium">Positioning</th>
+                    <th className="py-3 font-medium">What you get</th>
                   </tr>
                 </thead>
                 <tbody>
                   {comparison.map((row) => (
-                    <tr key={row.name} className="border-b border-border/70">
-                      <td className="py-3 pr-4 font-medium">{row.name}</td>
+                    <tr
+                      key={row.name}
+                      className={`border-b border-border/70 ${"edge" in row && row.edge ? "bg-primary/5" : ""}`}
+                    >
+                      <td className="py-3 pr-4 font-medium">
+                        {row.name}
+                        {"edge" in row && row.edge ? (
+                          <span className="ml-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                            Us
+                          </span>
+                        ) : null}
+                      </td>
                       <td className="py-3 pr-4 text-muted-foreground">{row.price}</td>
                       <td className="py-3 text-muted-foreground">{row.position}</td>
                     </tr>

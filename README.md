@@ -119,7 +119,14 @@ npx wrangler secret put PAYSTACK_PLAN_PRO
 npx wrangler secret put ADMIN_PASSWORD
 ```
 
-Client-side env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) must be set at build time:
+Client-side env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) must be set at build time. In the **Cloudflare dashboard** (Workers & Pages > your worker > Settings > Variables):
+
+1. Under **Build variables**, add:
+   - `VITE_SUPABASE_URL` = your Supabase project URL
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = your Supabase publishable/anon key
+2. Under **Secrets** (Runtime), add all server-side vars listed above
+
+Or pass them inline when building locally:
 
 ```sh
 VITE_SUPABASE_URL=https://your-project.supabase.co \
