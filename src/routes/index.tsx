@@ -32,6 +32,44 @@ export const Route = createFileRoute("/")({
       },
     ],
     links: [{ rel: "canonical", href: "https://mercercroft.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Mercercroft",
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          url: "https://mercercroft.com/",
+          description:
+            "Track how ChatGPT, Gemini, Perplexity and DeepSeek recommend your business, watch the trend over time, and get clear actions to be recommended more often.",
+          offers: [
+            {
+              "@type": "Offer",
+              name: "Free",
+              price: "0",
+              priceCurrency: "USD",
+              url: "https://mercercroft.com/#pricing",
+            },
+            {
+              "@type": "Offer",
+              name: "Starter",
+              price: "99",
+              priceCurrency: "USD",
+              url: "https://mercercroft.com/#pricing",
+            },
+            {
+              "@type": "Offer",
+              name: "Pro",
+              price: "149",
+              priceCurrency: "USD",
+              url: "https://mercercroft.com/#pricing",
+            },
+          ],
+        }),
+      },
+    ],
   }),
   component: Index,
 });
