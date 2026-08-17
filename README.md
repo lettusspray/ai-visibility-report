@@ -1,40 +1,167 @@
-# AI Visibility Report
+# Mercercroft
 
-Build "VisibilityAudit" — a one-time-purchase AI Search Visibility Report tool for marketing agencies. No subscriptions, no dashboards, no login required for buyers.
+AI visibility tracking for brands. Monitor how ChatGPT, Gemini, Perplexity and DeepSeek recommend your business, track sentiment and keywords over time, and get clear actions to improve.
 
-FLOW:
-1. Landing page: headline about agencies losing clients to competitors in ChatGPT/Gemini/Perplexity answers, explain the deliverable (a done-for-you, white-label-ready PDF report), show a sample report preview, price it at $99 one-time ("Agency Report") with a $149 tier ("Agency Report + White Label" that removes our branding and adds a text field for the agency's own logo/name to appear on the cover).
-2. Intake form after clicking Buy: brand name, brand website, 2-3 competitor names, industry/niche, target customer description (free text), agency name + logo upload (optional, only shown if they picked the white-label tier), email.
-3. Stripe Checkout for the selected tier, using the seamless Stripe integration.
-4. On successful payment, store the submission in Lovable Cloud (Postgres) with status "pending", and kick off report generation:
-   - Generate 8-10 realistic buyer-intent questions a customer would ask an AI assistant when shopping in that industry/niche (use the AI gateway, OpenAI model, to generate these based on the industry + target customer description provided).
-   - For each question, query it against: OpenAI (via AI gateway), Gemini (via AI gateway), and Perplexity (via the Perplexity connector). Record whether the brand is mentioned, whether each competitor is mentioned, and capture the raw answer text.
-   - Feed all results into one more AI gateway call (OpenAI, higher-effort prompt) that acts as a senior AI-visibility consultant: produce an executive summary (brand's visibility % vs each competitor's), a per-platform breakdown, a "why you're losing" analysis referencing specific answer patterns from the data, and 5 prioritized, specific action items.
-   - Render this into a clean, professional PDF report: cover page (white-label: agency name/logo if provided, otherwise our branding), executive summary, per-platform breakdown with example AI answer excerpts, the why-analysis, the action items, and a closing page.
-5. Email the buyer (use Resend if available, otherwise just show it on a results page) with a link to view/download the PDF once generation completes. Show a "generating your report, this takes about 2 minutes" status page with polling in the meantime.
-6. Simple admin view at /admin (password-gated, single shared password stored as a secret) listing all orders with status and a link to view/regenerate each report.
+Contact: hi@mercercroft.com
 
-DESIGN: Professional, credible, B2B SaaS aesthetic — not flashy. Should look like something a marketing agency would trust to put in front of their own client. Clean typography, neutral palette with one accent color, no stock-photo cheese.
+## Stack
 
-Keep the initial build focused on this full flow working end to end with real Stripe test-mode checkout and a real generated PDF — polish and edge cases can come after. Use Lovable Cloud for the database, storage (for PDFs and logos), and secrets (Stripe keys, Resend key if used).
+- **Frontend/SSR**: TanStack Start + React 19 + Vite
+- **Styling**: Tailwind CSS v4
+- **Database**: Supabase (PostgreSQL + RLS + Auth + Storage)
+- **Billing**: Paystack
+- **Collection**: Browser Use Cloud hosted agents (no AI provider APIs for collection)
+- **Analysis LLM**: DeepSeek v4-flash
+- **PDF**: pdf-lib
+- **Deploy target**: Cloudflare Workers via Nitro
 
-This project was built with [Lovable](https://lovable.dev).
+## Prerequisites
 
-## Build with Lovable
+- Node.js 22+
+- A Supabase project (database, auth, storage)
+- A Browser Use Cloud account (API keys for browser automation)
+- A DeepSeek API key (for analysis/generation)
+- A Paystack account (for billing)
+- Cloudflare account (for deployment)
+- Wrangler CLI: `npm i -g wrangler`
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/f2385f06-2dfa-46d6-89a2-2f06f32d9066).
+## Environment Variables
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+### Client-side (Vite build-time, prefixed `VITE_`)
 
-## Development
+| Variable                        | Description                   |
+| ------------------------------- | ----------------------------- |
+| `VITE_SUPABASE_URL`             | Supabase project URL          |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon/publishable key |
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Set these in `.env` for local dev:
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+```
+
+### Server-side (Cloudflare Workers runtime secrets)
+
+| Variable                    | Required | Description                              |
+| --------------------------- | -------- | ---------------------------------------- |
+| `SUPABASE_URL`              | Yes      | Same as `VITE_SUPABASE_URL`              |
+| `SUPABASE_PUBLISHABLE_KEY`  | Yes      | Same as `VITE_SUPABASE_PUBLISHABLE_KEY`  |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes      | Supabase service role key (bypasses RLS) |
+| `BROWSER_USE_API_KEYS`      | Yes      | Comma-separated Browser Use API keys     |
+| `BROWSER_USE_MODEL`         | No       | Default `gpt-5.6-luna`                   |
+| `BROWSER_USE_PROXY_COUNTRY` | No       | Proxy country code                       |
+| `DEEPSEEK_API_KEY`          | Yes      | DeepSeek API key for analysis            |
+| `PAYSTACK_SECRET_KEY`       | Yes      | Paystack secret key                      |
+| `PAYSTACK_PLAN_STARTER`     | Yes      | Paystack plan code for Starter           |
+| `PAYSTACK_PLAN_PRO`         | Yes      | Paystack plan code for Pro               |
+| `ADMIN_PASSWORD`            | Yes      | Password for `/admin`                    |
+
+## Local Development
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+git clone git@github.com:lettusspray/ai-visibility-report.git
+cd ai-visibility-report
+npm install
+cp .env.example .env   # fill in VITE_ vars
 npm run dev
 ```
+
+The dev server runs on `http://localhost:3000`.
+
+For server-side env vars in local dev, create a `.dev.vars` file (Cloudflare convention):
+
+```
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+SUPABASE_SERVICE_ROLE_KEY=...
+BROWSER_USE_API_KEYS=bu_...
+DEEPSEEK_API_KEY=...
+PAYSTACK_SECRET_KEY=...
+PAYSTACK_PLAN_STARTER=...
+PAYSTACK_PLAN_PRO=...
+ADMIN_PASSWORD=...
+```
+
+## Database Migrations
+
+Run Supabase migrations from `supabase/migrations/`:
+
+```sh
+# Via Supabase CLI (if installed)
+supabase db push
+
+# Or apply manually via the Supabase dashboard SQL editor
+```
+
+Key tables: `profiles`, `brands`, `tracked_queries`, `snapshots`, `brand_products`, `brand_facts`, `brand_keywords`.
+
+## Build & Deploy
+
+### Cloudflare Workers
+
+```sh
+npm run build
+npx wrangler deploy
+```
+
+Set secrets on Cloudflare:
+
+```sh
+npx wrangler secret put SUPABASE_URL
+npx wrangler secret put SUPABASE_PUBLISHABLE_KEY
+npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+npx wrangler secret put BROWSER_USE_API_KEYS
+npx wrangler secret put DEEPSEEK_API_KEY
+npx wrangler secret put PAYSTACK_SECRET_KEY
+npx wrangler secret put PAYSTACK_PLAN_STARTER
+npx wrangler secret put PAYSTACK_PLAN_PRO
+npx wrangler secret put ADMIN_PASSWORD
+```
+
+Client-side env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) must be set at build time:
+
+```sh
+VITE_SUPABASE_URL=https://your-project.supabase.co \
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_... \
+npm run build
+```
+
+### Custom Domain
+
+1. In the Cloudflare dashboard, go to Workers & Pages > your worker > Settings > Domains & Routes
+2. Add your custom domain (e.g. `mercercroft.com`)
+3. Update `og:url` and canonical links in `src/routes/__root.tsx` and `src/routes/index.tsx`
+4. Update `Sitemap:` in `public/robots.txt` and URLs in `public/sitemap.xml`
+
+## Architecture
+
+- File-based routing in `src/routes/`
+- Server logic in `src/lib/*.server.ts` and `*.functions.ts`
+- `src/server.ts` is the SSR error wrapper (Nitro entry)
+- `src/start.ts` configures CSRF + auth middleware (don't delete)
+- Dashboard is the primary report view; PDF is an optional export
+- Nothing is emailed — no email infrastructure
+
+## Key Flows
+
+### Snapshot Pipeline
+
+1. User triggers snapshot → `startSnapshot` inserts DB row
+2. `runSnapshot` generates buyer questions (mapped to brand keywords)
+3. Each question is sent to every available engine via Browser Use agents
+4. Results are scored: brand mentions, citations, product mentions, keyword visibility, sentiment
+5. Two-pass LLM analysis: grounded draft with footnotes, then editing pass
+6. PDF rendered and uploaded to Supabase storage
+7. Dashboard polls for completion
+
+### Engine Availability
+
+- **ChatGPT** and **Perplexity**: work without login (logged-out sessions)
+- **DeepSeek**: works without login
+- **Gemini, Claude, Meta AI, Grok**: require a saved Browser Use profile (M2)
+- Engines without credentials are silently skipped (not errors)
+
+## License
+
+Proprietary. All rights reserved.
